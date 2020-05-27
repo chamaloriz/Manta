@@ -30,12 +30,13 @@ import {
 export class Invoices extends PureComponent {
   constructor(props) {
     super(props);
-    this.state = { filter: null };
+    this.state = { filter: null, name_filter: "" };
     this.editInvoice = this.editInvoice.bind(this);
     this.deleteInvoice = this.deleteInvoice.bind(this);
     this.duplicateInvoice = this.duplicateInvoice.bind(this);
     this.setInvoiceStatus = this.setInvoiceStatus.bind(this);
     this.setFilter = this.setFilter.bind(this);
+    this.handleFilterChange = this.handleFilterChange.bind(this);
   }
 
   // Load Invoices & add event listeners
@@ -99,11 +100,19 @@ export class Invoices extends PureComponent {
     this.setState({ filter: currentFilter === newFilter ? null : newFilter });
   }
 
+  handleFilterChange(event) {
+    const name = event.target.name;
+    const value = event.target.value;
+    this.setState({ name_filter: value })
+  }
+
   // Render
   render() {
     const { dateFormat, invoices, t } = this.props;
-    const { filter } = this.state;
-    const filteredInvoices = filter ? invoices.filter(invoice => invoice.status === filter) : invoices
+    const { filter, name_filter } = this.state;
+    //const filteredInvoices = filter ? invoices.filter(invoice => invoice.status === filter) : invoices
+    const filteredInvoices = invoices.filter(invoice => invoice.recipient.fullname.toUpperCase().indexOf(name_filter.toUpperCase()) > -1)
+    //console.log(name_filter)
     const invoicesComponent = filteredInvoices.map((invoice, index) => (
       <Invoice
         key={invoice._id}
@@ -140,6 +149,13 @@ export class Invoices extends PureComponent {
           </PageHeaderActions>
         </PageHeader>
         <PageContent bare>
+          <input
+            className="mb-2"
+            name="filter"
+            type="text"
+            value={this.state.name_filter}
+            onChange={this.handleFilterChange}
+          />
           {invoices.length === 0 ? (
             <Message info text={t('messages:noInvoice')} />
           ) : (
